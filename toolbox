@@ -907,6 +907,7 @@ create()
     toolbox_profile_bind=""
     ulimit_host=""
     usr_mount_destination_flags="ro"
+    toolbox_hostname=""
 
     # shellcheck disable=SC2153
     if [ "$DBUS_SYSTEM_BUS_ADDRESS" != "" ]; then
@@ -1074,12 +1075,19 @@ create()
         spinner_directory=""
     fi
 
+    toolbox_hostname=$(podman inspect --format '{{index .Labels "toolbox.hostname.prefix"}}' "$base_toolbox_image_full")
+    if [ "X$toolbox_hostname" = "X" ]; then
+        toolbox_hostname="toolbox"
+    else
+        toolbox_hostname="$toolbox_hostname-toolbox"
+    fi
+
     # shellcheck disable=SC2086
     $podman_command create \
             --dns none \
             --env TOOLBOX_PATH="$TOOLBOX_PATH" \
             --group-add "$group_for_sudo" \
-            --hostname toolbox \
+            --hostname "$toolbox_hostname" \
             --ipc host \
             --label "com.github.containers.toolbox=true" \
             --label "com.github.debarshiray.toolbox=true" \
